@@ -15,7 +15,7 @@
             <div class="alert-text">
                 <span id="doadorNome" class="nome"></span>
                 <div class="mensagem">
-                    <span class="assinou">assinou</span>
+                    <span class="assinou">doou</span>
                     <span id="doadorValor" class="valor"></span>
                 </div>
                 <span class="submensagem">aquela ajuda para o monitor</span>
@@ -50,10 +50,10 @@
             
             const alertContent = document.getElementById('alertContent');
             alertContent.style.display = 'flex';
-            alertContent.classList.add('slide-in');
+            alertContent.classList.add('expand-animation');
 
             setTimeout(() => {
-                alertContent.classList.remove('slide-in');
+                alertContent.classList.remove('expand-animation');
                 alertContent.classList.add('slide-out');
                 
                 setTimeout(() => {
