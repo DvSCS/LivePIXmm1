@@ -57,18 +57,19 @@ body.transparent {
 
 .alert-content {
     display: none;
-    background: #18191A;
-    padding: 12px 15px;
-    border-radius: 8px;
-    color: white;
+    background: #f2f2f2;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 20px;
+    margin: 10px;
     align-items: center;
-    gap: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    gap: 15px;
+    font-family: Arial, sans-serif;
+    font-size: 16px;
+    color: #333;
 }
 
 .alert-icon {
-    background: #242526;
-    border-radius: 50%;
     width: 40px;
     height: 40px;
     display: flex;
@@ -78,21 +79,19 @@ body.transparent {
 }
 
 .pix-logo {
-    width: 25px;
-    height: 25px;
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
 }
 
 .alert-text {
     display: flex;
     flex-direction: column;
-    gap: 0px;
+    gap: 2px;
 }
 
 .alert-text .nome {
-    font-size: 0.95em;
     font-weight: bold;
-    color: #fff;
-    margin-bottom: 2px;
 }
 
 .mensagem {
@@ -102,23 +101,15 @@ body.transparent {
 }
 
 .alert-text .assinou {
-    font-size: 0.9em;
-    color: #B0B3B8;
+    color: #333;
 }
 
 .alert-text .valor {
-    font-size: 0.9em;
     font-weight: bold;
-    color: #0095F6;
+    color: #e60000;
 }
 
-.alert-text .submensagem {
-    font-size: 0.85em;
-    color: #B0B3B8;
-    margin-top: 2px;
-}
-
-/* Animações */
+/* Mantém as animações mais suaves */
 @keyframes slideIn {
     from {
         transform: translateY(-10px);
