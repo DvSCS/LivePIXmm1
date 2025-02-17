@@ -57,83 +57,96 @@ body.transparent {
 
 .alert-content {
     display: none;
-    background: #1a1a1a;
-    padding: 15px 20px;
-    border-radius: 10px;
+    background: #18191A;
+    padding: 12px 15px;
+    border-radius: 8px;
     color: white;
     align-items: center;
-    gap: 15px;
+    gap: 12px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.3);
 }
 
 .alert-icon {
-    background: #2d2d2d;
+    background: #242526;
     border-radius: 50%;
-    width: 50px;
-    height: 50px;
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 8px;
+    flex-shrink: 0;
 }
 
 .pix-logo {
-    width: 35px;
-    height: 35px;
+    width: 25px;
+    height: 25px;
 }
 
 .alert-text {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 0px;
 }
 
 .alert-text .nome {
-    font-size: 1.1em;
+    font-size: 0.95em;
     font-weight: bold;
     color: #fff;
+    margin-bottom: 2px;
+}
+
+.mensagem {
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
 .alert-text .assinou {
     font-size: 0.9em;
-    color: #999;
+    color: #B0B3B8;
 }
 
 .alert-text .valor {
-    font-size: 1.2em;
+    font-size: 0.9em;
     font-weight: bold;
-    color: #25D366;
+    color: #0095F6;
+}
+
+.alert-text .submensagem {
+    font-size: 0.85em;
+    color: #B0B3B8;
+    margin-top: 2px;
 }
 
 /* Animações */
 @keyframes slideIn {
     from {
-        transform: translateX(-20px);
+        transform: translateY(-10px);
         opacity: 0;
     }
     to {
-        transform: translateX(0);
+        transform: translateY(0);
         opacity: 1;
     }
 }
 
 @keyframes slideOut {
     from {
-        transform: translateX(0);
+        transform: translateY(0);
         opacity: 1;
     }
     to {
-        transform: translateX(-20px);
+        transform: translateY(-10px);
         opacity: 0;
     }
 }
 
 .slide-in {
-    animation: slideIn 0.5s ease forwards;
+    animation: slideIn 0.3s ease forwards;
 }
 
 .slide-out {
-    animation: slideOut 0.5s ease forwards;
+    animation: slideOut 0.3s ease forwards;
 }
 
 .alert-button {
