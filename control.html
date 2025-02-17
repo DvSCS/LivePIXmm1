@@ -17,7 +17,7 @@
             </p>
             <input type="text" id="nome" placeholder="Nome do doador">
             <input type="number" id="valor" placeholder="Valor do Pix">
-            <input type="text" id="mensagem" placeholder="Mensagem (opcional)">
+            <textarea id="mensagem" placeholder="Mensagem personalizada" rows="3"></textarea>
             <button onclick="simularPix()">Simular Doação</button>
         </div>
     </div>
@@ -40,7 +40,7 @@
         function simularPix() {
             const nome = document.getElementById('nome').value;
             const valor = document.getElementById('valor').value;
-            const mensagem = document.getElementById('mensagem').value || "aquela ajuda para o monitor";
+            const mensagem = document.getElementById('mensagem').value || "";
             
             if (!nome || !valor) {
                 alert('Por favor, preencha nome e valor!');

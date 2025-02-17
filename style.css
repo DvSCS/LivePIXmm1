@@ -37,6 +37,18 @@ body.transparent {
     width: 200px;
 }
 
+.control-panel textarea {
+    display: block;
+    margin: 10px 0;
+    padding: 8px;
+    width: 200px;
+    resize: vertical;
+    min-height: 60px;
+    font-family: Arial, sans-serif;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
 .control-panel button {
     background: #25D366;
     color: white;
