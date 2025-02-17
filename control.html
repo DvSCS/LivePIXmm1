@@ -21,8 +21,9 @@
     </div>
 
     <script>
-        // Gera a URL do alert.html
-        const alertUrl = window.location.href.replace('control.html', 'alert.html');
+        // Modifica a forma de gerar a URL para usar o domínio do GitHub Pages
+        const baseUrl = window.location.href.split('/').slice(0, -1).join('/');
+        const alertUrl = `${baseUrl}/alert.html`;
         document.getElementById('alertUrl').textContent = alertUrl;
 
         function copyUrl() {
@@ -39,16 +40,18 @@
                 return;
             }
 
-            // Envia a mensagem para todas as instâncias do alert.html
+            // Usa localStorage em vez de BroadcastChannel
             const message = {
                 type: 'pix',
                 nome: nome,
-                valor: parseFloat(valor).toFixed(2)
+                valor: parseFloat(valor).toFixed(2),
+                timestamp: Date.now() // Adiciona timestamp para identificar novas mensagens
             };
 
-            // Usa BroadcastChannel para comunicação entre abas
-            const bc = new BroadcastChannel('live_pix');
-            bc.postMessage(message);
+            localStorage.setItem('pixAlert', JSON.stringify(message));
+            
+            // Dispara um evento customizado
+            window.dispatchEvent(new Event('pixAlertUpdate'));
         }
     </script>
 </body>

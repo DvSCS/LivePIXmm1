@@ -18,13 +18,25 @@
     </div>
 
     <script>
-        const bc = new BroadcastChannel('live_pix');
-        
-        bc.onmessage = function(event) {
-            if (event.data.type === 'pix') {
-                showAlert(event.data.nome, event.data.valor);
+        // Remove BroadcastChannel e usa localStorage
+        let lastTimestamp = 0;
+
+        function checkForNewAlerts() {
+            const pixAlert = localStorage.getItem('pixAlert');
+            if (pixAlert) {
+                const data = JSON.parse(pixAlert);
+                if (data.timestamp > lastTimestamp) {
+                    lastTimestamp = data.timestamp;
+                    showAlert(data.nome, data.valor);
+                }
             }
         }
+
+        // Verifica a cada segundo se há novas mensagens
+        setInterval(checkForNewAlerts, 1000);
+
+        // Também verifica quando a página carrega
+        window.addEventListener('load', checkForNewAlerts);
 
         function showAlert(nome, valor) {
             document.getElementById('doadorNome').textContent = nome;
