@@ -5,6 +5,47 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Live Pix - Alert</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* Estilos específicos para OBS */
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+        
+        body {
+            background-color: rgba(0, 0, 0, 0);
+            margin: 0px auto;
+            overflow: hidden;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .alert-content {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .pix-logo {
+            width: 64px;
+            height: 64px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+        }
+
+        .nome {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .valor {
+            font-size: 22px;
+            color: #25D366;
+            font-weight: bold;
+        }
+
+        .submensagem {
+            font-size: 18px;
+            color: #666;
+        }
+    </style>
 </head>
 <body class="transparent">
     <div class="alert-area" id="alertArea">
@@ -28,145 +69,191 @@
         const synth = window.speechSynthesis;
         let selectedVoice = null;
         let retryCount = 0;
-        const MAX_RETRIES = 3;
+        const MAX_RETRIES = 5;
         let isSpeaking = false;
+        let voiceInitialized = false;
 
-        // Função para carregar a voz específica
-        function loadVoice(voiceName) {
-            const voices = synth.getVoices();
-            selectedVoice = voices.find(voice => voice.name === voiceName);
-            
-            if (!selectedVoice) {
-                console.error('Voz não encontrada:', voiceName);
-                // Fallback para qualquer voz Microsoft em português
-                selectedVoice = voices.find(voice => 
-                    (voice.name.includes('Microsoft') || voice.name.includes('Windows')) && 
-                    (voice.lang.includes('pt') || voice.name.includes('Brazilian'))
-                );
-            }
-
-            console.log('Voz carregada:', selectedVoice?.name);
-            return selectedVoice;
-        }
-
-        // Função para garantir que a fala anterior seja interrompida
-        function stopSpeaking() {
+        // Função para garantir que o sintetizador está pronto
+        function resetSpeechSynthesis() {
             return new Promise(resolve => {
                 synth.cancel();
-                const checkSpeaking = setInterval(() => {
+                const checkReady = setInterval(() => {
                     if (!synth.speaking) {
-                        clearInterval(checkSpeaking);
-                        isSpeaking = false;
+                        clearInterval(checkReady);
                         resolve();
                     }
-                }, 50);
+                }, 100);
             });
         }
 
-        // Atualiza a função speak para usar a voz selecionada
-        async function speak(text) {
-            if (isSpeaking) {
-                await stopSpeaking();
-            }
+        // Função melhorada para carregar voz
+        async function loadVoice(voiceName) {
+            await resetSpeechSynthesis();
+            
+            // Garante que as vozes foram carregadas
+            const voices = await new Promise(resolve => {
+                let attempts = 0;
+                const checkVoices = setInterval(() => {
+                    const available = synth.getVoices();
+                    attempts++;
+                    if (available.length > 0 || attempts > 50) { // 5 segundos máximo
+                        clearInterval(checkVoices);
+                        resolve(available);
+                    }
+                }, 100);
+            });
 
+            if (voices.length === 0) {
+                console.error('Não foi possível carregar as vozes');
+                return null;
+            }
+            
+            // Tenta encontrar a voz exata ou uma alternativa
+            selectedVoice = voices.find(voice => voice.name === voiceName) ||
+                           voices.find(voice => voice.lang === 'pt-BR') ||
+                           voices.find(voice => voice.lang.includes('pt')) ||
+                           voices[0];
+
+            if (selectedVoice) {
+                console.log('Voz carregada:', selectedVoice.name);
+                voiceInitialized = true;
+            }
+            
+            return selectedVoice;
+        }
+
+        // Função melhorada para falar
+        async function speak(text) {
             if (!selectedVoice) {
                 console.error('Nenhuma voz selecionada');
                 return;
             }
 
-            try {
-                isSpeaking = true;
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.voice = selectedVoice;
-                utterance.rate = 0.9;
-                utterance.pitch = 1.0;
-                utterance.volume = 1.0;
-                utterance.lang = 'pt-BR';
+            await resetSpeechSynthesis();
 
-                utterance.onend = () => {
-                    console.log('Fala concluída');
-                    isSpeaking = false;
-                    retryCount = 0;
-                };
+            return new Promise((resolve, reject) => {
+                const startSpeaking = () => {
+                    isSpeaking = true;
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    utterance.voice = selectedVoice;
+                    utterance.rate = 1.1;
+                    utterance.pitch = 1.0;
+                    utterance.volume = 1.0;
+                    utterance.lang = 'pt-BR';
 
-                utterance.onerror = (event) => {
-                    console.error('Erro na fala:', event);
-                    isSpeaking = false;
-                    if (retryCount < MAX_RETRIES) {
-                        retryCount++;
-                        setTimeout(speak, 500, text);
+                    utterance.onend = () => {
+                        console.log('Fala concluída com sucesso');
+                        isSpeaking = false;
+                        retryCount = 0;
+                        resolve();
+                    };
+
+                    utterance.onerror = async (event) => {
+                        console.warn('Erro na fala, tentando recuperar...', event);
+                        
+                        if (retryCount < MAX_RETRIES) {
+                            console.log(`Tentativa ${retryCount + 1} de ${MAX_RETRIES}`);
+                            retryCount++;
+                            
+                            // Reseta o estado
+                            await resetSpeechSynthesis();
+                            
+                            // Tenta recarregar a voz
+                            if (!voiceInitialized || event.error === 'synthesis-failed') {
+                                await loadVoice(selectedVoice.name);
+                            }
+                            
+                            // Espera um pouco antes de tentar novamente
+                            setTimeout(startSpeaking, 500);
+                        } else {
+                            console.error('Número máximo de tentativas atingido');
+                            isSpeaking = false;
+                            retryCount = 0;
+                            // Continua mesmo com erro de fala
+                            resolve();
+                        }
+                    };
+
+                    try {
+                        synth.speak(utterance);
+                        
+                        // Workaround para Chrome/Edge
+                        setTimeout(() => {
+                            if (synth.speaking) {
+                                synth.pause();
+                                synth.resume();
+                            }
+                        }, 100);
+                    } catch (error) {
+                        console.error('Erro ao iniciar fala:', error);
+                        reject(error);
                     }
                 };
 
-                synth.speak(utterance);
-
-                // Workaround para Chrome
-                if (!/firefox/i.test(navigator.userAgent)) {
-                    await new Promise(resolve => setTimeout(resolve, 50));
-                    if (synth.speaking) {
-                        synth.pause();
-                        synth.resume();
-                    }
-                }
-            } catch (error) {
-                console.error('Erro ao iniciar fala:', error);
-                isSpeaking = false;
-            }
+                startSpeaking();
+            });
         }
 
-        function formatarValor(valor) {
-            const [reais, centavos] = valor.toString().split('.');
-            let textoValor = `${reais} ${reais === '1' ? 'real' : 'reais'}`;
-            if (centavos && parseInt(centavos) > 0) {
-                textoValor += ` e ${parseInt(centavos)} ${parseInt(centavos) === '1' ? 'centavo' : 'centavos'}`;
-            }
-            return textoValor;
-        }
-
-        // Atualiza a função showAlert para usar a voz do localStorage
+        // Função para mostrar alerta com melhor tratamento de erros
         async function showAlert(nome, valor, mensagem, voiceName) {
-            if (voiceName) {
-                loadVoice(voiceName);
-            }
+            try {
+                // Atualiza o conteúdo
+                document.getElementById('doadorNome').textContent = nome;
+                document.getElementById('doadorValor').textContent = `R$ ${valor}`;
+                document.getElementById('doadorMensagem').textContent = mensagem;
 
-            document.getElementById('doadorNome').textContent = nome;
-            document.getElementById('doadorValor').textContent = `R$ ${valor}`;
-            document.getElementById('doadorMensagem').textContent = mensagem;
-            
-            // Formata o texto para uma leitura mais natural
-            const valorFormatado = formatarValor(valor);
-            const textoParaFalar = `${nome} doou ${valorFormatado}${mensagem ? '... ' + mensagem : ''}`;
-            
-            // Aguarda qualquer fala anterior terminar
-            if (isSpeaking) {
-                await stopSpeaking();
-            }
-
-            // Inicia a animação
-            const alertContent = document.getElementById('alertContent');
-            alertContent.style.display = 'flex';
-            alertContent.classList.add('icon-only');
-            
-            // Aguarda um pouco e começa a falar
-            setTimeout(async () => {
-                retryCount = 0;
-                await speak(textoParaFalar);
-            }, 1200);
-            
-            setTimeout(() => {
-                alertContent.classList.remove('icon-only');
-                alertContent.classList.add('expand-animation');
-            }, 1000);
-
-            setTimeout(() => {
-                alertContent.classList.remove('expand-animation');
-                alertContent.classList.add('shrink-animation');
+                // Formata o valor para fala de forma mais natural
+                const valorNumerico = parseFloat(valor);
+                const reais = Math.floor(valorNumerico);
+                const centavos = Math.round((valorNumerico - reais) * 100);
                 
+                let valorFormatado;
+                if (centavos === 0) {
+                    valorFormatado = `${reais} ${reais === 1 ? 'real' : 'reais'}`;
+                } else {
+                    valorFormatado = `${reais} ${reais === 1 ? 'real' : 'reais'} e ${centavos} ${centavos === 1 ? 'centavo' : 'centavos'}`;
+                }
+
+                const textoParaFalar = `${nome} doou ${valorFormatado}${mensagem ? '. ' + mensagem : ''}`;
+
+                // Carrega/recarrega a voz se necessário
+                if (!voiceInitialized || !selectedVoice) {
+                    await loadVoice(voiceName);
+                }
+
+                // Mostra a animação mesmo se houver erro na fala
+                alertContent.style.display = 'flex';
+                alertContent.classList.add('icon-only');
+
                 setTimeout(() => {
-                    alertContent.style.display = 'none';
-                    alertContent.classList.remove('shrink-animation', 'icon-only');
+                    alertContent.classList.remove('icon-only');
+                    alertContent.classList.add('expand-animation');
+                    
+                    // Tenta falar após a animação
+                    setTimeout(async () => {
+                        try {
+                            await speak(textoParaFalar);
+                        } catch (error) {
+                            console.error('Erro na fala, continuando com a animação');
+                        }
+                    }, 1200);
                 }, 1000);
-            }, 7000);
+
+                // Remove a animação após o tempo
+                setTimeout(() => {
+                    if (alertContent.style.display === 'flex') {
+                        alertContent.classList.remove('expand-animation');
+                        alertContent.classList.add('shrink-animation');
+                        
+                        setTimeout(() => {
+                            alertContent.style.display = 'none';
+                            alertContent.classList.remove('shrink-animation', 'icon-only');
+                        }, 1000);
+                    }
+                }, 7000);
+            } catch (error) {
+                console.error('Erro ao mostrar alerta:', error);
+            }
         }
 
         function checkForNewAlerts() {
@@ -182,6 +269,25 @@
 
         setInterval(checkForNewAlerts, 1000);
         window.addEventListener('load', checkForNewAlerts);
+
+        // Inicialização das vozes
+        async function initVoices() {
+            if (speechSynthesis.onvoiceschanged !== undefined) {
+                speechSynthesis.onvoiceschanged = async () => {
+                    if (!selectedVoice) {
+                        await loadVoice();
+                    }
+                };
+            }
+            
+            // Tenta carregar vozes imediatamente
+            if (synth.getVoices().length > 0) {
+                await loadVoice();
+            }
+        }
+
+        // Chama a inicialização
+        initVoices();
     </script>
 </body>
 </html> 

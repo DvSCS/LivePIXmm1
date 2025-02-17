@@ -25,6 +25,21 @@
                 <button onclick="copyUrl()">Copiar URL</button>
                 <button onclick="openAlert()" class="alert-button">Abrir Página do Alerta</button>
             </p>
+            
+            <div class="obs-instructions">
+                <h3>Configurações para OBS:</h3>
+                <ul>
+                    <li>Largura: 800</li>
+                    <li>Altura: 600</li>
+                    <li>CSS personalizado:</li>
+                    <code style="white-space: pre;">
+body { 
+    background-color: rgba(0, 0, 0, 0); 
+    margin: 0px auto; 
+    overflow: hidden; 
+}</code>
+                </ul>
+            </div>
             <input type="text" id="nome" placeholder="Nome do doador">
             <input type="number" id="valor" placeholder="Valor do Pix">
             <textarea id="mensagem" placeholder="Mensagem personalizada" rows="3"></textarea>
@@ -38,39 +53,123 @@
 
         // Carrega as vozes disponíveis
         function loadVoices() {
-            voices = synth.getVoices();
-            const voiceSelect = document.getElementById('voiceSelect');
-            voiceSelect.innerHTML = '';
+            // Força recarregamento das vozes e aguarda
+            return new Promise(resolve => {
+                const checkVoices = setInterval(() => {
+                    voices = synth.getVoices();
+                    if (voices.length > 0) {
+                        clearInterval(checkVoices);
+                        const voiceSelect = document.getElementById('voiceSelect');
+                        voiceSelect.innerHTML = '';
 
-            // Filtra apenas vozes Microsoft em português
-            const ptVoices = voices.filter(voice => 
-                (voice.name.includes('Microsoft') || voice.name.includes('Windows')) && 
-                (voice.lang.includes('pt') || voice.name.includes('Brazilian'))
-            );
+                        // Lista expandida com mais vozes neurais
+                        const voicePreferences = [
+                            // Vozes Microsoft Neural Premium (Mais Realistas)
+                            voice => voice.name.includes('Microsoft Francisca Online Natural') && voice.lang.includes('pt'),
+                            voice => voice.name.includes('Microsoft Antonio Online Natural') && voice.lang.includes('pt'),
+                            voice => voice.name.includes('Microsoft Maria Helena Natural') && voice.lang.includes('pt'),
+                            voice => voice.name.includes('Microsoft Cristiano Natural') && voice.lang.includes('pt'),
+                            voice => voice.name.includes('Microsoft Yolanda Natural') && voice.lang.includes('pt'),
+                            
+                            // Vozes Microsoft Neural
+                            voice => voice.name.includes('Microsoft Francisca Neural') && voice.lang.includes('pt'),
+                            voice => voice.name.includes('Microsoft Antonio Neural') && voice.lang.includes('pt'),
+                            voice => voice.name.includes('Microsoft Maria Helena Neural') && voice.lang.includes('pt'),
+                            voice => voice.name.includes('Microsoft Cristiano Neural') && voice.lang.includes('pt'),
+                            
+                            // Amazon Polly Neural (Muito Realistas)
+                            voice => voice.name.includes('Camila Neural') && voice.lang.includes('pt'),
+                            voice => voice.name.includes('Vitória Neural') && voice.lang.includes('pt'),
+                            voice => voice.name.includes('Thiago Neural') && voice.lang.includes('pt'),
+                            voice => voice.name.includes('Gabriela Neural') && voice.lang.includes('pt'),
+                            
+                            // Google Neural Aprimorado
+                            voice => voice.name.includes('Google português do Brasil Neural'),
+                            voice => voice.name.includes('Google Brasil Neural'),
+                            
+                            // Azure Neural (Alta Qualidade)
+                            voice => voice.name.includes('Azure Francisca Neural') && voice.lang.includes('pt'),
+                            voice => voice.name.includes('Azure Antonio Neural') && voice.lang.includes('pt'),
+                            
+                            // Vozes Microsoft Padrão
+                            voice => voice.name.includes('Microsoft Maria') && voice.lang.includes('pt'),
+                            voice => voice.name.includes('Microsoft Daniel') && voice.lang.includes('pt'),
+                            
+                            // Outras vozes de qualidade
+                            voice => voice.name.includes('Google português do Brasil'),
+                            voice => voice.name.includes('Microsoft') && voice.lang.includes('pt'),
+                            
+                            // Vozes do Sistema
+                            voice => voice.name.includes('Heloisa'),
+                            voice => voice.name.includes('Francisca'),
+                            voice => voice.name.includes('Maria'),
+                            
+                            // Fallbacks
+                            voice => voice.lang === 'pt-BR',
+                            voice => voice.lang.includes('pt')
+                        ];
 
-            if (ptVoices.length === 0) {
-                voiceSelect.innerHTML = '<option value="">Nenhuma voz Microsoft PT-BR encontrada</option>';
-                return;
-            }
+                        // Coleta todas as vozes que correspondem aos critérios
+                        let ptVoices = [];
+                        for (let preference of voicePreferences) {
+                            const matchingVoices = voices.filter(preference);
+                            ptVoices.push(...matchingVoices.filter(v => !ptVoices.includes(v)));
+                        }
 
-            ptVoices.forEach(voice => {
-                const option = document.createElement('option');
-                option.value = voice.name;
-                option.textContent = `${voice.name} (${voice.lang})`;
-                voiceSelect.appendChild(option);
+                        // Se não encontrar vozes, mostra instruções
+                        if (ptVoices.length === 0) {
+                            voiceSelect.innerHTML = `
+                                <option value="">Nenhuma voz em português encontrada</option>
+                                <option value="">Instale vozes no Windows: Configurações > Hora e Idioma > Fala</option>
+                                <option value="">No Mac: Preferências > Acessibilidade > Fala</option>
+                            `;
+                            return;
+                        }
+
+                        // Adiciona as vozes ao select com informações de qualidade
+                        ptVoices.forEach(voice => {
+                            const option = document.createElement('option');
+                            option.value = voice.name;
+                            
+                            // Indicadores de qualidade
+                            let quality = '';
+                            if (voice.name.includes('Natural')) quality = '⭐⭐⭐ ';
+                            else if (voice.name.includes('Neural')) quality = '⭐⭐ ';
+                            else if (voice.name.includes('Microsoft') || voice.name.includes('Google')) quality = '⭐ ';
+                            
+                            option.textContent = `${quality}${voice.name} (${voice.lang})`;
+                            voiceSelect.appendChild(option);
+                        });
+
+                        // Restaura a última voz selecionada
+                        const savedVoice = localStorage.getItem('selectedVoice');
+                        if (savedVoice && ptVoices.some(v => v.name === savedVoice)) {
+                            voiceSelect.value = savedVoice;
+                        }
+                        resolve(voices);
+                    }
+                }, 100);
             });
-
-            // Salva a voz selecionada
-            const selectedVoice = voiceSelect.value;
-            localStorage.setItem('selectedVoice', selectedVoice);
         }
 
-        // Carrega as vozes quando disponíveis
-        if (speechSynthesis.onvoiceschanged !== undefined) {
-            speechSynthesis.onvoiceschanged = loadVoices;
+        // Inicialização melhorada das vozes
+        async function initVoices() {
+            if (speechSynthesis.onvoiceschanged !== undefined) {
+                speechSynthesis.onvoiceschanged = async () => {
+                    await loadVoices();
+                };
+            }
+            
+            // Tenta carregar vozes imediatamente
+            if (synth.getVoices().length > 0) {
+                await loadVoices();
+            }
         }
 
-        // Função para testar a voz
+        // Chama a inicialização
+        initVoices();
+
+        // Função de teste aprimorada
         function testVoice() {
             const selectedVoice = voices.find(v => v.name === document.getElementById('voiceSelect').value);
             if (!selectedVoice) {
@@ -78,13 +177,20 @@
                 return;
             }
 
-            synth.cancel(); // Para qualquer fala em andamento
-            const utterance = new SpeechSynthesisUtterance('Teste de voz do Live Pix. Um dois três testando.');
+            synth.cancel(); // Para qualquer fala anterior
+            const utterance = new SpeechSynthesisUtterance(
+                'Teste de voz do Live Pix. Maria Helena doou 50 reais. Muito obrigado pela doação! Você é incrível!'
+            );
             utterance.voice = selectedVoice;
-            utterance.rate = 0.9;
+            utterance.rate = 0.95;
             utterance.pitch = 1.0;
             utterance.volume = 1.0;
             utterance.lang = 'pt-BR';
+
+            // Garante que a voz funcione
+            utterance.onend = () => console.log('Teste concluído');
+            utterance.onerror = (e) => console.error('Erro no teste:', e);
+
             synth.speak(utterance);
         }
 
@@ -130,13 +236,6 @@
             localStorage.setItem('pixAlert', JSON.stringify(message));
             window.dispatchEvent(new Event('pixAlertUpdate'));
         }
-
-        // Carrega a voz salva ao iniciar
-        window.addEventListener('load', () => {
-            if (voices.length > 0) {
-                loadVoices();
-            }
-        });
     </script>
 </body>
 </html> 
