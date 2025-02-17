@@ -3,60 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Pix Simulator</title>
+    <title>Live Pix - Início</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .welcome-panel {
+            text-align: center;
+            padding: 40px;
+            max-width: 600px;
+            margin: 50px auto;
+            background: #f0f0f0;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .welcome-panel h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .button-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .big-button {
+            padding: 20px 40px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .big-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        .control-button {
+            background: #25D366;
+            color: white;
+        }
+
+        .alert-button {
+            background: #4a90e2;
+            color: white;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Painel de controle -->
-        <div class="control-panel">
-            <h2>Simulador Live Pix</h2>
-            <input type="text" id="nome" placeholder="Nome do doador">
-            <input type="number" id="valor" placeholder="Valor do Pix">
-            <button onclick="simularPix()">Simular Doação</button>
-        </div>
-
-        <!-- Área de alerta (usar esta URL no OBS) -->
-        <div class="alert-area" id="alertArea">
-            <div class="alert-content" id="alertContent">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/d/de/Pix_logo.png" class="pix-logo">
-                <div class="alert-text">
-                    <span id="doadorNome"></span>
-                    <span id="doadorValor"></span>
-                </div>
-            </div>
+    <div class="welcome-panel">
+        <h1>Live Pix Simulator</h1>
+        <div class="button-container">
+            <button onclick="window.location.href='control.html'" class="big-button control-button">
+                Painel de Controle
+            </button>
+            <button onclick="window.location.href='alert.html'" class="big-button alert-button">
+                Página do Alerta
+            </button>
         </div>
     </div>
-
-    <script>
-        function simularPix() {
-            const nome = document.getElementById('nome').value;
-            const valor = document.getElementById('valor').value;
-            
-            if (!nome || !valor) {
-                alert('Por favor, preencha todos os campos!');
-                return;
-            }
-
-            document.getElementById('doadorNome').textContent = nome;
-            document.getElementById('doadorValor').textContent = 
-                `R$ ${parseFloat(valor).toFixed(2)}`;
-            
-            const alertContent = document.getElementById('alertContent');
-            alertContent.style.display = 'flex';
-            alertContent.classList.add('slide-in');
-
-            // Remove a animação após 5 segundos
-            setTimeout(() => {
-                alertContent.classList.remove('slide-in');
-                alertContent.classList.add('slide-out');
-                
-                setTimeout(() => {
-                    alertContent.style.display = 'none';
-                    alertContent.classList.remove('slide-out');
-                }, 1000);
-            }, 5000);
-        }
-    </script>
 </body>
 </html> 
