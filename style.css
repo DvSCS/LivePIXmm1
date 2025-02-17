@@ -57,21 +57,19 @@ body.transparent {
 
 .alert-content {
     display: none;
-    background: #f2f2f2;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    padding: 20px;
-    margin: 10px;
+    background: #18191A;
+    padding: 12px;
+    border-radius: 8px;
+    color: white;
     align-items: center;
-    gap: 15px;
-    font-family: Arial, sans-serif;
-    font-size: 16px;
-    color: #333;
+    gap: 12px;
 }
 
 .alert-icon {
-    width: 40px;
-    height: 40px;
+    background: #242526;
+    border-radius: 12px;
+    width: 48px;
+    height: 48px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -79,19 +77,21 @@ body.transparent {
 }
 
 .pix-logo {
-    width: 40px;
-    height: 40px;
-    object-fit: contain;
+    width: 32px;
+    height: 32px;
 }
 
 .alert-text {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 0px;
 }
 
 .alert-text .nome {
-    font-weight: bold;
+    font-size: 0.95em;
+    font-weight: 500;
+    color: #E4E6EB;
+    margin-bottom: 1px;
 }
 
 .mensagem {
@@ -101,12 +101,20 @@ body.transparent {
 }
 
 .alert-text .assinou {
-    color: #333;
+    font-size: 0.9em;
+    color: #B0B3B8;
 }
 
 .alert-text .valor {
-    font-weight: bold;
-    color: #e60000;
+    font-size: 0.9em;
+    font-weight: 500;
+    color: #E4E6EB;
+}
+
+.alert-text .submensagem {
+    font-size: 0.85em;
+    color: #B0B3B8;
+    margin-top: 1px;
 }
 
 /* Mantém as animações mais suaves */
