@@ -18,7 +18,7 @@
                     <span class="assinou">doou</span>
                     <span id="doadorValor" class="valor"></span>
                 </div>
-                <span class="submensagem">aquela ajuda para o monitor</span>
+                <span id="doadorMensagem" class="submensagem"></span>
             </div>
         </div>
     </div>
@@ -33,7 +33,7 @@
                 const data = JSON.parse(pixAlert);
                 if (data.timestamp > lastTimestamp) {
                     lastTimestamp = data.timestamp;
-                    showAlert(data.nome, data.valor);
+                    showAlert(data.nome, data.valor, data.mensagem);
                 }
             }
         }
@@ -44,23 +44,31 @@
         // Também verifica quando a página carrega
         window.addEventListener('load', checkForNewAlerts);
 
-        function showAlert(nome, valor) {
+        function showAlert(nome, valor, mensagem) {
             document.getElementById('doadorNome').textContent = nome;
             document.getElementById('doadorValor').textContent = `R$ ${valor}`;
+            document.getElementById('doadorMensagem').textContent = mensagem;
             
             const alertContent = document.getElementById('alertContent');
             alertContent.style.display = 'flex';
-            alertContent.classList.add('expand-animation');
+            alertContent.classList.add('icon-only');
+            
+            // Primeiro mostra só o ícone
+            setTimeout(() => {
+                alertContent.classList.remove('icon-only');
+                alertContent.classList.add('expand-animation');
+            }, 1000);
 
+            // Remove as animações e fecha
             setTimeout(() => {
                 alertContent.classList.remove('expand-animation');
                 alertContent.classList.add('slide-out');
                 
                 setTimeout(() => {
                     alertContent.style.display = 'none';
-                    alertContent.classList.remove('slide-out');
+                    alertContent.classList.remove('slide-out', 'icon-only');
                 }, 1000);
-            }, 5000);
+            }, 7000);
         }
     </script>
 </body>

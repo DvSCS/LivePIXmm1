@@ -17,6 +17,7 @@
             </p>
             <input type="text" id="nome" placeholder="Nome do doador">
             <input type="number" id="valor" placeholder="Valor do Pix">
+            <input type="text" id="mensagem" placeholder="Mensagem (opcional)">
             <button onclick="simularPix()">Simular Doação</button>
         </div>
     </div>
@@ -39,23 +40,22 @@
         function simularPix() {
             const nome = document.getElementById('nome').value;
             const valor = document.getElementById('valor').value;
+            const mensagem = document.getElementById('mensagem').value || "aquela ajuda para o monitor";
             
             if (!nome || !valor) {
-                alert('Por favor, preencha todos os campos!');
+                alert('Por favor, preencha nome e valor!');
                 return;
             }
 
-            // Usa localStorage em vez de BroadcastChannel
             const message = {
                 type: 'pix',
                 nome: nome,
                 valor: parseFloat(valor).toFixed(2),
-                timestamp: Date.now() // Adiciona timestamp para identificar novas mensagens
+                mensagem: mensagem,
+                timestamp: Date.now()
             };
 
             localStorage.setItem('pixAlert', JSON.stringify(message));
-            
-            // Dispara um evento customizado
             window.dispatchEvent(new Event('pixAlertUpdate'));
         }
     </script>
