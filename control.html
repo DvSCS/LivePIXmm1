@@ -10,6 +10,16 @@
     <div class="container">
         <div class="control-panel">
             <h2>Simulador Live Pix</h2>
+            
+            <!-- Adiciona seletor de voz -->
+            <div class="voice-settings">
+                <h3>Configurações de Voz</h3>
+                <select id="voiceSelect" style="width: 100%; margin: 10px 0; padding: 8px;">
+                    <option value="">Carregando vozes...</option>
+                </select>
+                <button onclick="testVoice()" style="background: #4a90e2;">Testar Voz</button>
+            </div>
+
             <p>URL para OBS Browser Source: <br>
                 <code id="alertUrl"></code>
                 <button onclick="copyUrl()">Copiar URL</button>
@@ -23,6 +33,61 @@
     </div>
 
     <script>
+        const synth = window.speechSynthesis;
+        let voices = [];
+
+        // Carrega as vozes disponíveis
+        function loadVoices() {
+            voices = synth.getVoices();
+            const voiceSelect = document.getElementById('voiceSelect');
+            voiceSelect.innerHTML = '';
+
+            // Filtra apenas vozes Microsoft em português
+            const ptVoices = voices.filter(voice => 
+                (voice.name.includes('Microsoft') || voice.name.includes('Windows')) && 
+                (voice.lang.includes('pt') || voice.name.includes('Brazilian'))
+            );
+
+            if (ptVoices.length === 0) {
+                voiceSelect.innerHTML = '<option value="">Nenhuma voz Microsoft PT-BR encontrada</option>';
+                return;
+            }
+
+            ptVoices.forEach(voice => {
+                const option = document.createElement('option');
+                option.value = voice.name;
+                option.textContent = `${voice.name} (${voice.lang})`;
+                voiceSelect.appendChild(option);
+            });
+
+            // Salva a voz selecionada
+            const selectedVoice = voiceSelect.value;
+            localStorage.setItem('selectedVoice', selectedVoice);
+        }
+
+        // Carrega as vozes quando disponíveis
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+            speechSynthesis.onvoiceschanged = loadVoices;
+        }
+
+        // Função para testar a voz
+        function testVoice() {
+            const selectedVoice = voices.find(v => v.name === document.getElementById('voiceSelect').value);
+            if (!selectedVoice) {
+                alert('Por favor, selecione uma voz primeiro');
+                return;
+            }
+
+            synth.cancel(); // Para qualquer fala em andamento
+            const utterance = new SpeechSynthesisUtterance('Teste de voz do Live Pix. Um dois três testando.');
+            utterance.voice = selectedVoice;
+            utterance.rate = 0.9;
+            utterance.pitch = 1.0;
+            utterance.volume = 1.0;
+            utterance.lang = 'pt-BR';
+            synth.speak(utterance);
+        }
+
         // Modifica a forma de gerar a URL para usar o domínio do GitHub Pages
         const baseUrl = window.location.href.split('/').slice(0, -1).join('/');
         const alertUrl = `${baseUrl}/alert.html`;
@@ -41,9 +106,15 @@
             const nome = document.getElementById('nome').value;
             const valor = document.getElementById('valor').value;
             const mensagem = document.getElementById('mensagem').value || "";
+            const selectedVoice = document.getElementById('voiceSelect').value;
             
             if (!nome || !valor) {
                 alert('Por favor, preencha nome e valor!');
+                return;
+            }
+
+            if (!selectedVoice) {
+                alert('Por favor, selecione uma voz primeiro');
                 return;
             }
 
@@ -52,12 +123,20 @@
                 nome: nome,
                 valor: parseFloat(valor).toFixed(2),
                 mensagem: mensagem,
+                voiceName: selectedVoice,
                 timestamp: Date.now()
             };
 
             localStorage.setItem('pixAlert', JSON.stringify(message));
             window.dispatchEvent(new Event('pixAlertUpdate'));
         }
+
+        // Carrega a voz salva ao iniciar
+        window.addEventListener('load', () => {
+            if (voices.length > 0) {
+                loadVoices();
+            }
+        });
     </script>
 </body>
 </html> 

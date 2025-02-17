@@ -24,8 +24,150 @@
     </div>
 
     <script>
-        // Remove BroadcastChannel e usa localStorage
         let lastTimestamp = 0;
+        const synth = window.speechSynthesis;
+        let selectedVoice = null;
+        let retryCount = 0;
+        const MAX_RETRIES = 3;
+        let isSpeaking = false;
+
+        // Função para carregar a voz específica
+        function loadVoice(voiceName) {
+            const voices = synth.getVoices();
+            selectedVoice = voices.find(voice => voice.name === voiceName);
+            
+            if (!selectedVoice) {
+                console.error('Voz não encontrada:', voiceName);
+                // Fallback para qualquer voz Microsoft em português
+                selectedVoice = voices.find(voice => 
+                    (voice.name.includes('Microsoft') || voice.name.includes('Windows')) && 
+                    (voice.lang.includes('pt') || voice.name.includes('Brazilian'))
+                );
+            }
+
+            console.log('Voz carregada:', selectedVoice?.name);
+            return selectedVoice;
+        }
+
+        // Função para garantir que a fala anterior seja interrompida
+        function stopSpeaking() {
+            return new Promise(resolve => {
+                synth.cancel();
+                const checkSpeaking = setInterval(() => {
+                    if (!synth.speaking) {
+                        clearInterval(checkSpeaking);
+                        isSpeaking = false;
+                        resolve();
+                    }
+                }, 50);
+            });
+        }
+
+        // Atualiza a função speak para usar a voz selecionada
+        async function speak(text) {
+            if (isSpeaking) {
+                await stopSpeaking();
+            }
+
+            if (!selectedVoice) {
+                console.error('Nenhuma voz selecionada');
+                return;
+            }
+
+            try {
+                isSpeaking = true;
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.voice = selectedVoice;
+                utterance.rate = 0.9;
+                utterance.pitch = 1.0;
+                utterance.volume = 1.0;
+                utterance.lang = 'pt-BR';
+
+                utterance.onend = () => {
+                    console.log('Fala concluída');
+                    isSpeaking = false;
+                    retryCount = 0;
+                };
+
+                utterance.onerror = (event) => {
+                    console.error('Erro na fala:', event);
+                    isSpeaking = false;
+                    if (retryCount < MAX_RETRIES) {
+                        retryCount++;
+                        setTimeout(speak, 500, text);
+                    }
+                };
+
+                synth.speak(utterance);
+
+                // Workaround para Chrome
+                if (!/firefox/i.test(navigator.userAgent)) {
+                    await new Promise(resolve => setTimeout(resolve, 50));
+                    if (synth.speaking) {
+                        synth.pause();
+                        synth.resume();
+                    }
+                }
+            } catch (error) {
+                console.error('Erro ao iniciar fala:', error);
+                isSpeaking = false;
+            }
+        }
+
+        function formatarValor(valor) {
+            const [reais, centavos] = valor.toString().split('.');
+            let textoValor = `${reais} ${reais === '1' ? 'real' : 'reais'}`;
+            if (centavos && parseInt(centavos) > 0) {
+                textoValor += ` e ${parseInt(centavos)} ${parseInt(centavos) === '1' ? 'centavo' : 'centavos'}`;
+            }
+            return textoValor;
+        }
+
+        // Atualiza a função showAlert para usar a voz do localStorage
+        async function showAlert(nome, valor, mensagem, voiceName) {
+            if (voiceName) {
+                loadVoice(voiceName);
+            }
+
+            document.getElementById('doadorNome').textContent = nome;
+            document.getElementById('doadorValor').textContent = `R$ ${valor}`;
+            document.getElementById('doadorMensagem').textContent = mensagem;
+            
+            // Formata o texto para uma leitura mais natural
+            const valorFormatado = formatarValor(valor);
+            const textoParaFalar = `${nome} doou ${valorFormatado}${mensagem ? '... ' + mensagem : ''}`;
+            
+            // Aguarda qualquer fala anterior terminar
+            if (isSpeaking) {
+                await stopSpeaking();
+            }
+
+            // Inicia a animação
+            const alertContent = document.getElementById('alertContent');
+            alertContent.style.display = 'flex';
+            alertContent.classList.add('icon-only');
+            
+            // Aguarda um pouco e começa a falar
+            setTimeout(async () => {
+                retryCount = 0;
+                await speak(textoParaFalar);
+            }, 1200);
+            
+            setTimeout(() => {
+                alertContent.classList.remove('icon-only');
+                alertContent.classList.add('expand-animation');
+            }, 1000);
+
+            setTimeout(() => {
+                alertContent.classList.remove('expand-animation');
+                alertContent.classList.add('shrink-animation');
+                
+                setTimeout(() => {
+                    alertContent.style.display = 'none';
+                    alertContent.classList.remove('shrink-animation', 'icon-only');
+                }, 1000);
+            }, 7000);
+        }
 
         function checkForNewAlerts() {
             const pixAlert = localStorage.getItem('pixAlert');
@@ -33,43 +175,13 @@
                 const data = JSON.parse(pixAlert);
                 if (data.timestamp > lastTimestamp) {
                     lastTimestamp = data.timestamp;
-                    showAlert(data.nome, data.valor, data.mensagem);
+                    showAlert(data.nome, data.valor, data.mensagem, data.voiceName);
                 }
             }
         }
 
-        // Verifica a cada segundo se há novas mensagens
         setInterval(checkForNewAlerts, 1000);
-
-        // Também verifica quando a página carrega
         window.addEventListener('load', checkForNewAlerts);
-
-        function showAlert(nome, valor, mensagem) {
-            document.getElementById('doadorNome').textContent = nome;
-            document.getElementById('doadorValor').textContent = `R$ ${valor}`;
-            document.getElementById('doadorMensagem').textContent = mensagem;
-            
-            const alertContent = document.getElementById('alertContent');
-            alertContent.style.display = 'flex';
-            alertContent.classList.add('icon-only');
-            
-            // Primeiro mostra só o ícone
-            setTimeout(() => {
-                alertContent.classList.remove('icon-only');
-                alertContent.classList.add('expand-animation');
-            }, 1000);
-
-            // Remove as animações e fecha
-            setTimeout(() => {
-                alertContent.classList.remove('expand-animation');
-                alertContent.classList.add('slide-out');
-                
-                setTimeout(() => {
-                    alertContent.style.display = 'none';
-                    alertContent.classList.remove('slide-out', 'icon-only');
-                }, 1000);
-            }, 7000);
-        }
     </script>
 </body>
 </html> 
