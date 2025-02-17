@@ -110,4 +110,9 @@ body.transparent {
 
 .slide-out {
     animation: slideOut 1s ease forwards;
+}
+
+.alert-button {
+    background: #4a90e2 !important; /* Cor diferente para distinguir */
+    margin-left: 10px !important;
 } 
