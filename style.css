@@ -115,4 +115,41 @@ body.transparent {
 .alert-button {
     background: #4a90e2 !important; /* Cor diferente para distinguir */
     margin-left: 10px !important;
+}
+
+/* Estilos para os botões grandes */
+.big-button {
+    display: inline-block;
+    text-decoration: none;
+    padding: 20px 40px;
+    font-size: 1.2em;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+    min-width: 200px;
+}
+
+.big-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+}
+
+.control-button {
+    background: #25D366;
+    color: white !important;
+}
+
+.alert-button {
+    background: #4a90e2;
+    color: white !important;
+}
+
+/* Container para centralizar os botões */
+.button-container {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 30px;
 } 
