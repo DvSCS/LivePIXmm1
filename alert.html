@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Pix - Alert</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="transparent">
+    <div class="alert-area" id="alertArea">
+        <div class="alert-content" id="alertContent">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/d/de/Pix_logo.png" class="pix-logo">
+            <div class="alert-text">
+                <span id="doadorNome"></span>
+                <span id="doadorValor"></span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const bc = new BroadcastChannel('live_pix');
+        
+        bc.onmessage = function(event) {
+            if (event.data.type === 'pix') {
+                showAlert(event.data.nome, event.data.valor);
+            }
+        }
+
+        function showAlert(nome, valor) {
+            document.getElementById('doadorNome').textContent = nome;
+            document.getElementById('doadorValor').textContent = `R$ ${valor}`;
+            
+            const alertContent = document.getElementById('alertContent');
+            alertContent.style.display = 'flex';
+            alertContent.classList.add('slide-in');
+
+            setTimeout(() => {
+                alertContent.classList.remove('slide-in');
+                alertContent.classList.add('slide-out');
+                
+                setTimeout(() => {
+                    alertContent.style.display = 'none';
+                    alertContent.classList.remove('slide-out');
+                }, 1000);
+            }, 5000);
+        }
+    </script>
+</body>
+</html> 

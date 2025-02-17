@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Pix - Painel de Controle</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="control-panel">
+            <h2>Simulador Live Pix</h2>
+            <p>URL para OBS Browser Source: <br>
+                <code id="alertUrl"></code>
+                <button onclick="copyUrl()">Copiar URL</button>
+            </p>
+            <input type="text" id="nome" placeholder="Nome do doador">
+            <input type="number" id="valor" placeholder="Valor do Pix">
+            <button onclick="simularPix()">Simular Doação</button>
+        </div>
+    </div>
+
+    <script>
+        // Gera a URL do alert.html
+        const alertUrl = window.location.href.replace('control.html', 'alert.html');
+        document.getElementById('alertUrl').textContent = alertUrl;
+
+        function copyUrl() {
+            navigator.clipboard.writeText(alertUrl);
+            alert('URL copiada para a área de transferência!');
+        }
+
+        function simularPix() {
+            const nome = document.getElementById('nome').value;
+            const valor = document.getElementById('valor').value;
+            
+            if (!nome || !valor) {
+                alert('Por favor, preencha todos os campos!');
+                return;
+            }
+
+            // Envia a mensagem para todas as instâncias do alert.html
+            const message = {
+                type: 'pix',
+                nome: nome,
+                valor: parseFloat(valor).toFixed(2)
+            };
+
+            // Usa BroadcastChannel para comunicação entre abas
+            const bc = new BroadcastChannel('live_pix');
+            bc.postMessage(message);
+        }
+    </script>
+</body>
+</html> 

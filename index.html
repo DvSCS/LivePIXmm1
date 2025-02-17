@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Pix Simulator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Painel de controle -->
+        <div class="control-panel">
+            <h2>Simulador Live Pix</h2>
+            <input type="text" id="nome" placeholder="Nome do doador">
+            <input type="number" id="valor" placeholder="Valor do Pix">
+            <button onclick="simularPix()">Simular Doação</button>
+        </div>
+
+        <!-- Área de alerta (usar esta URL no OBS) -->
+        <div class="alert-area" id="alertArea">
+            <div class="alert-content" id="alertContent">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/d/de/Pix_logo.png" class="pix-logo">
+                <div class="alert-text">
+                    <span id="doadorNome"></span>
+                    <span id="doadorValor"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function simularPix() {
+            const nome = document.getElementById('nome').value;
+            const valor = document.getElementById('valor').value;
+            
+            if (!nome || !valor) {
+                alert('Por favor, preencha todos os campos!');
+                return;
+            }
+
+            document.getElementById('doadorNome').textContent = nome;
+            document.getElementById('doadorValor').textContent = 
+                `R$ ${parseFloat(valor).toFixed(2)}`;
+            
+            const alertContent = document.getElementById('alertContent');
+            alertContent.style.display = 'flex';
+            alertContent.classList.add('slide-in');
+
+            // Remove a animação após 5 segundos
+            setTimeout(() => {
+                alertContent.classList.remove('slide-in');
+                alertContent.classList.add('slide-out');
+                
+                setTimeout(() => {
+                    alertContent.style.display = 'none';
+                    alertContent.classList.remove('slide-out');
+                }, 1000);
+            }, 5000);
+        }
+    </script>
+</body>
+</html> 
