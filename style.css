@@ -4,9 +4,7 @@ body {
 }
 
 body.transparent {
-    background-color: rgba(0, 0, 0, 0);
-    margin: 0px auto;
-    overflow: hidden;
+    background: transparent;
 }
 
 .container {
@@ -66,26 +64,23 @@ body.transparent {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 100%;
-    max-width: 800px;
-    height: 600px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    width: 500px;
     z-index: 9999;
 }
 
 .alert-content {
     display: none;
-    background: rgba(255, 255, 255, 0.95);
+    background: #242526;
+    padding: 16px;
     border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    color: #E4E6EB;
     align-items: center;
-    gap: 20px;
-    max-width: 90%;
-    transform-origin: center;
-    animation: none;
+    gap: 16px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    overflow: hidden;
+    width: fit-content;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(255,255,255,0.1);
 }
 
 .alert-icon {

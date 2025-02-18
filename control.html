@@ -25,21 +25,6 @@
                 <button onclick="copyUrl()">Copiar URL</button>
                 <button onclick="openAlert()" class="alert-button">Abrir Página do Alerta</button>
             </p>
-            
-            <div class="obs-instructions">
-                <h3>Configurações para OBS:</h3>
-                <ul>
-                    <li>Largura: 800</li>
-                    <li>Altura: 600</li>
-                    <li>CSS personalizado:</li>
-                    <code style="white-space: pre;">
-body { 
-    background-color: rgba(0, 0, 0, 0); 
-    margin: 0px auto; 
-    overflow: hidden; 
-}</code>
-                </ul>
-            </div>
             <input type="text" id="nome" placeholder="Nome do doador">
             <input type="number" id="valor" placeholder="Valor do Pix">
             <textarea id="mensagem" placeholder="Mensagem personalizada" rows="3"></textarea>
@@ -47,6 +32,7 @@ body {
         </div>
     </div>
 
+    <script src="auto_donate.js"></script>
     <script>
         const synth = window.speechSynthesis;
         let voices = [];
